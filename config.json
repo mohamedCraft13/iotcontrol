@@ -1,0 +1,28 @@
+{
+    "broker": "192.168.1.15",
+    "devices": [
+        "pico_01"
+    ],
+    "relay_map": {
+        "pico_01": [
+            {
+                "name": "button",
+                "cmd": "relay1"
+            }
+        ]
+    },
+    "sensor_map": {
+        "pico_01": [
+            {
+                "name": "temperature",
+                "key": "temp",
+                "unit": "C\u00b0"
+            },
+            {
+                "name": "humidity",
+                "key": "humi",
+                "unit": "%"
+            }
+        ]
+    }
+}
