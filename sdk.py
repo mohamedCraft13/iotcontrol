@@ -57,7 +57,7 @@ class IoTDevice:
         payload = {"ts": int(time.time()), "data": sensor_data}
         self.client.publish(topic, json.dumps(payload))
 
-    
+    # ✅ FIXED subscribe (only one active)
     def subscribe_telemetry(self, target_id):
         topic = f"devices/{target_id}/telemetry"
 
