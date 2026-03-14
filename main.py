@@ -15,10 +15,9 @@ from kivymd.uix.textfield import MDTextField
 from sdk import IoTDevice
 from kivy.uix.screenmanager import ScreenManager, Screen
 
-# Fix 1: Import Window for reveal_app
 from kivy.core.window import Window
 
-# Fix 2: Safely import pyi_splash (only exists when packaged with PyInstaller)
+
 try:
     import pyi_splash
 except ImportError:
