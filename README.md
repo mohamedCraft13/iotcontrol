@@ -60,7 +60,7 @@ By handling the "heavy lifting" of communication, the SDK allows you to focus on
    WIFI_PASSWORD = "Your_Password"
    ```
 
-> **⚠️ Hardware Note:** The example code requires a **DHT11 sensor** connected to **pin 3**, and a **4-channel relay module** connected as follows:
+> **⚠️ Hardware Note:** The example code requires a **DHT11 sensor** connected to **pin 3**, and a **4-channel active low  relay module** connected as follows:
 >
 > | Pin | Relay   |
 > |-----|---------|
