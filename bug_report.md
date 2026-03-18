@@ -1,33 +1,56 @@
 ---
-name:  Bug Report
+name: 🐛 Bug Report
 about: Create a report to help us improve IoTControl
-title: '[BUG] - '
+title: '[BUG] - <short description>'
 labels: bug
 assignees: ''
+---
+
+## 🐛 Describe the Bug
+A clear and concise description of what the bug is.
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
-
-**To Reproduce**
+## 🔁 Steps to Reproduce
 Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+1. Go to `...`
+2. Do `...`
+3. See error: `...`
 
-**Expected behavior**
+---
+
+## ✅ Expected Behavior
 A clear and concise description of what you expected to happen.
 
-**Environment (please complete the following information):**
-- Microcontroller: [e.g. ESP32, Raspberry Pi Pico W]
-- Python Version: [e.g. MicroPython v1.22, Python 3.11]
-- Android Version: [e.g. Android 13]
-- Mosquitto Version: [e.g. 2.0.11 local]
+---
 
-**Screenshots/Logs**
-If applicable, add screenshots or paste the Python error logs here to help explain your problem.
+## 💥 Actual Behavior
+What actually happened instead?
 
-**Additional context**
-Add any other context about the problem here.
+---
+
+## 🖥️ Environment
+Please complete the following information:
+
+| Component            | Version / Details                          |
+|---------------------|--------------------------------------------|
+| **Microcontroller** | e.g. Raspberry Pi Pico W                   |
+| **CircuitPython**   | e.g. CircuitPython 9.1.0                   |
+| **Android Version** | e.g. Android 13                            |
+| **App Version**     | e.g. IotControl V1.1                       |
+| **Mosquitto**       | e.g. 2.0.11 (local / remote)               |
+| **OS (broker)**     | e.g. Raspberry Pi OS, Ubuntu 22.04         |
+
+---
+
+## 📸 Screenshots / Logs
+If applicable, add screenshots or paste error logs below.
+
+```
+Paste error logs here
+```
+
+---
+
+## 📋 Additional Context
+Add any other context, notes, or observations about the problem here.
