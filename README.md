@@ -9,6 +9,9 @@ An all-in-one, 100% Python IoT ecosystem designed for simplicity.
 
 By handling the "heavy lifting" of communication, the SDK allows you to focus on building your project rather than troubleshooting MQTT protocols or managing socket connections.
 
+
+![IotControl App](app_v1.1.png)
+
 ---
 
 ## 🛠️ How to Set Up
@@ -96,7 +99,7 @@ Then go back to `code.py` on the Pico and set the broker variable to that IP add
 
 ### Step 4 — Set Up the App
 
-1. Download the latest release of the **IotControl app** from the [Releases page](https://github.com/mohamedCraft13/iotcontrol/releases) and install it.
+1. Download the latest release of the **IotControl app** (Windows, Linux, Android) from the [Releases page](https://github.com/mohamedCraft13/iotcontrol/releases) and install it.
 
 2. Open the app, tap the **Settings (⚙️)** icon, and configure:
    - **Broker IP** → your broker's IP address
