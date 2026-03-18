@@ -18,7 +18,7 @@ By handling the "heavy lifting" of communication, the SDK allows you to focus on
 
 2. Hold down the **BOOTSEL** button on your Pico W, then — while still holding it — connect the Pico to your PC via a micro-USB data cable.
 
-   > 📷 *(Add a BOOTSEL button photo to the repo here)*
+   ![BOOTSEL Button](boot_sel.png)
 
 3. The Pico will appear as a USB drive named **`RPI-RP2`**.
 
