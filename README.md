@@ -81,6 +81,12 @@ sudo apt install mosquitto mosquitto-clients -y
 # Check that the service is running (you should see "active (running)")
 sudo systemctl status mosquitto
 
+#edidt mosquito config
+sudo nano /etc/mosquitto/mosquitto.conf
+#scrole down and add :
+listener 1883 0.0.0.0
+allow_anonymous true
+
 # Allow firewall access (if you have ufw enabled)
 sudo ufw allow 1883
 ```
