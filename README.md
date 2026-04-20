@@ -83,10 +83,10 @@ sudo systemctl status mosquitto
 
 #edidt mosquito config
 sudo nano /etc/mosquitto/mosquitto.conf
-#scrole down and add :
+#Scroll to the end of the file and paste these two lines:
 listener 1883 0.0.0.0
 allow_anonymous true
-
+#then press ctrl+s (save)then ctrl+x (exit)
 # Allow firewall access (if you have ufw enabled)
 sudo ufw allow 1883
 ```
