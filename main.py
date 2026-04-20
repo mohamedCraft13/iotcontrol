@@ -14,10 +14,10 @@ from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.textfield import MDTextField
 from sdk import IoTDevice
 from kivy.uix.screenmanager import ScreenManager, Screen
-# Fix 1: Import Window for reveal_app
+# mport Window for reveal_app
 from kivy.core.window import Window
 
-# Fix 2: Safely import pyi_splash (only exists when packaged with PyInstaller)
+# Safely import pyi_splash (only exists when packaged with PyInstaller)
 try:
     import pyi_splash
 except ImportError:
@@ -86,7 +86,7 @@ def resource_path(relative_path):
 
 class IoTControlApp(MDApp):
 
-    # Fix 3: build() is now correctly indented inside the class
+    
     def build(self):
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "Blue"
@@ -170,7 +170,7 @@ MDBoxLayout:
                 spacing: "10dp"
 ''')
 
-    # Fix 4: Single on_start — merged both versions, splash logic preserved
+    # Single on_start — merged both versions, splash logic preserved
     def on_start(self):
         self.setup_menu()
         self.render_all()
@@ -249,7 +249,7 @@ MDBoxLayout:
         box.add_widget(self.theme_btn)
         box.add_widget(self.about_btn)
 
-        # Fix 5: Added missing SAVE button to settings dialog
+        # Added missing SAVE button to settings dialog
         self.dialog = MDDialog(
             title="Settings",
             type="custom",
@@ -284,7 +284,7 @@ MDBoxLayout:
         self.hub.port = self.mqtt_port
         self.hub.mqtt_id = self.mqtt_id
         self.hub.connect()
-        # Fix 7: Guard uses the string sentinel "None" consistently
+        # Guard uses the string sentinel "None" consistently
         if self.mqtt_id != "None":
             self.hub.subscribe_telemetry(self.mqtt_id)
 
