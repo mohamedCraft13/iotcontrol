@@ -116,7 +116,8 @@ Then go back to `code.py` on the Pico and set the broker variable to that IP add
    > 📝 **Note:** These commands are specific to the example code. If you wrote your own firmware, use the commands defined in your code. For the **4-relay example**, add tiles with commands `relay1`, `relay2`, `relay3`, and `relay4`.
 
    Tap **Save**.
-fore more info on the usage of the app watch this [video](https://youtube.com/shorts/8ljhEil_UkE?feature=share)
+
+formore info on the usage of the app watch this [video](https://youtube.com/shorts/8ljhEil_UkE?feature=share)
 ---
 
 You're all set! 🎉 Your Pico W should now be connected to the broker and controllable from the app.
