@@ -14,8 +14,7 @@ By handling the "heavy lifting" of communication, the SDK allows you to focus on
 
 ---
 
-## 🛠️ How to Set Up
-
+## 🛠️ How to Set Up(example project )
 ---
 
 ### Step 1 — Flash the Pico W with CircuitPython
