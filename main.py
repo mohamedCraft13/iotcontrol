@@ -14,10 +14,10 @@ from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.textfield import MDTextField
 from sdk import IoTDevice
 from kivy.uix.screenmanager import ScreenManager, Screen
-
+# Fix 1: Import Window for reveal_app
 from kivy.core.window import Window
 
-
+# Fix 2: Safely import pyi_splash (only exists when packaged with PyInstaller)
 try:
     import pyi_splash
 except ImportError:
@@ -77,6 +77,12 @@ class RelayCard(MDCard):
         else:
             self.md_bg_color = ("#7a3e3e")
 
+import sys
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
+
 
 class IoTControlApp(MDApp):
 
@@ -84,7 +90,7 @@ class IoTControlApp(MDApp):
     def build(self):
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "Blue"
-        self.icon = 'icon.png'
+        self.icon = resource_path('icon.png')
 
         os.makedirs(self.user_data_dir, exist_ok=True)
         self.config_path = os.path.join(self.user_data_dir, "config.json")
@@ -168,7 +174,7 @@ MDBoxLayout:
     def on_start(self):
         self.setup_menu()
         self.render_all()
-        Clock.schedule_once(self.reveal_app, 0.1)
+        Clock.schedule_once(self.reveal_app, 0.4)
 
     def reveal_app(self, dt):
         """Make the Kivy window visible and close the PyInstaller splash screen."""
