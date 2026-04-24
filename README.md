@@ -107,7 +107,7 @@ Then go back to `code.py` on the Pico and set the broker variable to that IP add
 1. Download the latest release of the **IotControl app** (Windows, Linux, Android) from the [Releases page](https://github.com/mohamedCraft13/iotcontrol/releases) and install it.
 
 2. Open the app, tap the **Settings (⚙️)** icon, and configure:
-   - **Broker IP** → your broker's IP address or ##you can use a public mqtt brokern like [HiveMQ](https://www.hivemq.com/mqtt/public-mqtt-broker/) if you are using V1.1.1+ of the APP
+   - **Broker IP** → your broker's IP address or ,you can use a public mqtt brokern like [HiveMQ](https://www.hivemq.com/mqtt/public-mqtt-broker/) if you are using V1.1.1+ of the APP
    - **Port** → `1883`
    - **Device MQTT ID** → any unique name for your phone/app instance *(make sure no other device uses the same name)*
 
