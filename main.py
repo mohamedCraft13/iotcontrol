@@ -1,5 +1,5 @@
 # Copyright (C) 2026 Mohamed Akoum
-
+#24-4-2026
 import json, os, shutil
 from kivy.lang import Builder
 from kivy.clock import Clock
@@ -14,10 +14,8 @@ from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.textfield import MDTextField
 from sdk import IoTDevice
 from kivy.uix.screenmanager import ScreenManager, Screen
-# mport Window for reveal_app
 from kivy.core.window import Window
 
-# Safely import pyi_splash (only exists when packaged with PyInstaller)
 try:
     import pyi_splash
 except ImportError:
@@ -51,7 +49,7 @@ class RelayCard(MDCard):
         self.radius = [15,]
         self.cmd = cmd
         self.on_power = on_power
-        self.card_state = state  # Loaded from config
+        self.card_state = state
 
         layout = MDBoxLayout(orientation="horizontal", spacing=10)
         layout.add_widget(MDLabel(text=name.upper(), bold=True, size_hint_x=0.4))
@@ -68,7 +66,7 @@ class RelayCard(MDCard):
 
     def press_action(self, card_state):
         self.card_state = card_state
-        self.on_power(self.cmd, card_state)  # This handles saving too
+        self.on_power(self.cmd, card_state)
         self.update_visual()
 
     def update_visual(self):
@@ -77,16 +75,15 @@ class RelayCard(MDCard):
         else:
             self.md_bg_color = ("#7a3e3e")
 
+
 import sys
 def resource_path(relative_path):
-    """ Get absolute path to resource, works for dev and for PyInstaller """
     base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(base_path, relative_path)
 
 
 class IoTControlApp(MDApp):
 
-    
     def build(self):
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "Blue"
@@ -94,12 +91,12 @@ class IoTControlApp(MDApp):
 
         os.makedirs(self.user_data_dir, exist_ok=True)
         self.config_path = os.path.join(self.user_data_dir, "config.json")
-
-        # Old location (where config used to be stored)
         self.old_config_path = os.path.join(os.getcwd(), "config.json")
         self.migrate_old_config()
         self.load_data()
         self.device_id = self.device_options[0] if self.device_options else "None"
+
+        # FIX: Use self.id (not mqtt_id) to match sdk.py's attribute name
         self.hub = IoTDevice(device_id=self.mqtt_id, broker=self.mqtt_broker, port=self.mqtt_port)
         self.hub.on_telemetry_received = self.on_telemetry_callback
         self.reconnect_hub()
@@ -170,14 +167,12 @@ MDBoxLayout:
                 spacing: "10dp"
 ''')
 
-    # Single on_start — merged both versions, splash logic preserved
     def on_start(self):
         self.setup_menu()
         self.render_all()
         Clock.schedule_once(self.reveal_app, 0.4)
 
     def reveal_app(self, dt):
-        """Make the Kivy window visible and close the PyInstaller splash screen."""
         Window.show()
         if pyi_splash:
             try:
@@ -200,7 +195,6 @@ MDBoxLayout:
         if dev_id != self.device_id:
             return
 
-        # ---- UPDATE SENSORS ----
         for widget in self.root.ids.sensor_container.children:
             if isinstance(widget, SensorCard):
                 val = data.get(widget.data_key, "--")
@@ -208,7 +202,6 @@ MDBoxLayout:
                              if s['key'] == widget.data_key), "")
                 widget.val_label.text = f"{val} {unit}"
 
-        # ---- UPDATE RELAYS FROM DEVICE DATA ----
         for widget in self.root.ids.relay_container.children:
             if isinstance(widget, RelayCard):
                 if widget.cmd in data:
@@ -216,7 +209,6 @@ MDBoxLayout:
                     if device_state in ("on", "off"):
                         widget.card_state = device_state
                         widget.update_visual()
-                        # Also save it to config memory
                         for r in self.device_data.get(self.device_id, []):
                             if r["cmd"] == widget.cmd:
                                 r["state"] = device_state
@@ -249,7 +241,6 @@ MDBoxLayout:
         box.add_widget(self.theme_btn)
         box.add_widget(self.about_btn)
 
-        # Added missing SAVE button to settings dialog
         self.dialog = MDDialog(
             title="Settings",
             type="custom",
@@ -272,7 +263,6 @@ MDBoxLayout:
     def save_settings(self, *args):
         self.mqtt_broker = self.set_broker.text.strip()
         self.mqtt_port = int(self.set_port.text) if self.set_port.text.strip() else 1883
-        # Fix 6: Guard against empty MQTT ID — fall back to "None" string sentinel
         self.mqtt_id = self.set_mqtt.text.strip() if self.set_mqtt.text.strip() else "None"
         self.save_data()
         self.dialog.dismiss()
@@ -280,13 +270,21 @@ MDBoxLayout:
 
     def reconnect_hub(self):
         self.hub.disconnect()
+
+        # FIX: Use hub.id (not hub.mqtt_id) to match sdk.py's attribute name
+        self.hub.id = self.mqtt_id
         self.hub.broker = self.mqtt_broker
         self.hub.port = self.mqtt_port
-        self.hub.mqtt_id = self.mqtt_id
+
+        # Update the command topic to match the new device id
+        self.hub.cmd_topic = f"devices/{self.mqtt_id}/commands"
+
         self.hub.connect()
-        # Guard uses the string sentinel "None" consistently
-        if self.mqtt_id != "None":
-            self.hub.subscribe_telemetry(self.mqtt_id)
+
+        # subscribe_telemetry now safely handles not-yet-connected state;
+        # _on_connect will finalize the subscription when ready
+        if self.device_id != "None":
+            self.hub.subscribe_telemetry(self.device_id)
 
     def load_data(self):
         if os.path.exists(self.config_path):
