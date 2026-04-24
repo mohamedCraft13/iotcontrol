@@ -70,7 +70,7 @@ By handling the "heavy lifting" of communication, the SDK allows you to focus on
 
 ---
 
-### Step 3 — Set Up the MQTT Broker(optinal)
+### Step 3 — Set Up the MQTT Broker(optional)
 ##you can use a public mqtt brokern like [HiveMQ](https://www.hivemq.com/mqtt/public-mqtt-broker/) if you are using V1.1.1+ of the APP
 On any PC or Raspberry Pi running Linux, open a terminal and run:
 
