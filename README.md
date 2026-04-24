@@ -120,7 +120,7 @@ Then go back to `code.py` on the Pico and set the broker variable to that IP add
    - **Command** → the command the Pico will receive
    Tap **ADD**
 
-%. Tap the <img src="[https://icons8.com](https://icons8.com/icon/SQSH5ji2Tdy3/bell-curve)" alt="bell-curve"/> **chart-bell-curve** ** button (top-right) to add a sensor tile. You'll need to set:
+%. Tap the *chart-bell-curve** ** button (top-right) to add a sensor tile. You'll need to set:
    - **label** → any display name you want
    - **json key** → the key set in the code for thi exampel set it to temp
    - **Unit** → set the unit for exampel Celsius (°C) (you can leave it empty
