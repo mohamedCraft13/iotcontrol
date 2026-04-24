@@ -118,6 +118,13 @@ Then go back to `code.py` on the Pico and set the broker variable to that IP add
 4. Tap the **`⊞`** button (top-right) to add a control tile. You'll need to set:
    - **Label** → any display name you want
    - **Command** → the command the Pico will receive
+   Tap **ADD**
+
+%. Tap the <img src="https://icons8.com" alt="bell-curve"/> **chart-bell-curve** ** button (top-right) to add a sensor tile. You'll need to set:
+   - **label** → any display name you want
+   - **json key** → the key set in the code for thi exampel set it to temp
+   - **Unit** → set the unit for exampel Celsius (°C) (you can leave it empty
+   Tap **ADD**
 
    > 📝 **Note:** These commands are specific to the example code. If you wrote your own firmware, use the commands defined in your code. For the **4-relay example**, add tiles with commands `relay1`, `relay2`, `relay3`, and `relay4`.
 
