@@ -39,7 +39,7 @@ Please complete the following information:
 | **Android Version** | e.g. Android 13                            |
 | **App Version**     | e.g. IotControl V1.1                       |
 | **Mosquitto**       | e.g. 2.0.11 (local / remote)               |
-| **OS (broker)**     | e.g. Raspberry Pi OS, Ubuntu 22.04         |
+| **OS (broker)**     | e.g. Raspberry Pi OS,Ubuntu/public broker  |
 
 ---
 
