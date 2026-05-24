@@ -10,7 +10,6 @@ import led_paterns
 
 # ================= HARDWARE SETUP =================
 
-# Relay pins (active LOW)
 relays = {
     "relay1": digitalio.DigitalInOut(board.GP16),
     "relay2": digitalio.DigitalInOut(board.GP17),
@@ -18,45 +17,26 @@ relays = {
     "relay4": digitalio.DigitalInOut(board.GP19),
 }
 
-# Configure all relays as outputs and turn them OFF initially
 for r in relays.values():
     r.direction = digitalio.Direction.OUTPUT
-    r.value = 1  # 1 = OFF (because active LOW)
+    r.value = 1  # OFF (active LOW)
 
-# Onboard LED (status indicator)
 devled = digitalio.DigitalInOut(board.GP15)
 devled.direction = digitalio.Direction.OUTPUT
 
-# DHT11 temperature & humidity sensor
 dht11_sensor = adafruit_dht.DHT11(board.GP3)
-time.sleep(2)  # Give sensor time to stabilize
+time.sleep(2)
 
+# ================= GLOBALS =================
 
-# ================= HANDEL COMMANDS  =================
+auto_mode = False
 
-# Function to handle incoming MQTT commands
-def handle_commands(command, value):
-    print(f"MQTT Command: {command} -> {value}")
-
-    # Only act if command matches a relay name
-    if command in relays:
-        if value.lower() == "on":
-            relays[command].value = 0  # Turn relay ON
-        elif value.lower() == "off":
-            relays[command].value = 1  # Turn relay OFF
-
-
-
-
-
-# ================= WIFI CONNECTION =================
+# ================= WIFI =================
 
 print("Connecting to WiFi...")
-
 ssid = os.getenv("WIFI_SSID")
 password = os.getenv("WIFI_PASSWORD")
 
-# Stop if WiFi credentials are missing
 if not ssid or not password:
     print("Missing WiFi credentials!")
     led_paterns.blink(devled)
@@ -69,19 +49,20 @@ except Exception as e:
     print("WiFi Error:", e)
     led_paterns.fast(devled)
 
-# Create socket pool for networking
 pool = socketpool.SocketPool(wifi.radio)
 
+# ================= MQTT SETUP =================
 
-# ================= MQTT / SDK SETUP =================
+device = IoTDevice(device_id="pico_01", broker="broker.hivemq.com", pool=pool)
 
-device = IoTDevice(
-    device_id="pico_01",
-    broker="192.168.1.9",
-    pool=pool
-)
+def handle_commands(command, value):
+    global auto_mode
+    if command in relays:
+        relays[command].value = 0 if value.lower() == "on" else 1
+    if command == "auto_mode":
+        auto_mode = value.lower() == "on"
+        print("Auto mode:", auto_mode)
 
-# Assign command handler
 device.on_command_received = handle_commands
 
 print("Connecting to MQTT broker...")
@@ -92,55 +73,77 @@ except Exception as e:
     print("MQTT Error:", e)
     led_paterns.sos(devled)
 
+# ================= HELPERS =================
+
+def interruptible_sleep(seconds):
+    """Sleep while keeping MQTT alive; exits early if auto_mode turns off."""
+    deadline = time.monotonic() + seconds
+    while time.monotonic() < deadline and auto_mode:
+        device.update()
+        time.sleep(0.1)
+
+
+# ================= AUTO MOD LOOP  =================
+
+def automode_loop():
+    print("Auto mode started")
+    while auto_mode:
+        temp = dht11_sensor.temperature
+        try:
+            if  int(temp) >= 23:  
+                relays["relay1"].value = 0       # turn ON
+            else:
+                relays["relay1"].value = 1       # turn OFF
+
+            print(temp)
+            time.sleep(0.5)
+        except:
+            print("error")
+
+
+        
+    device.send_telemetry({"online": True})
+    print("Auto mode stopped")
 
 # ================= MAIN LOOP =================
 
 last_telemetry_time = 0
-telemetry_interval = 5  # seconds
+telemetry_interval = 5
 
 while True:
-    # Keep MQTT alive
     try:
         device.update()
     except Exception as e:
         print("MQTT lost, reconnecting...", e)
-        
         try:
             device.reconnect()
         except:
             pass
 
-    current_time = time.monotonic()
+    if auto_mode:
+        automode_loop()  # blocks until auto_mode = False
 
-    # Send telemetry every X seconds
+    current_time = time.monotonic()
     if current_time - last_telemetry_time >= telemetry_interval:
         try:
-            # Read temperature and humidity
             temp = dht11_sensor.temperature
             humi = dht11_sensor.humidity
-
             if temp is not None and humi is not None:
-                sensor_data = {
-                    "temp": temp ,
+                device.send_telemetry({
+                    "temp": temp,
                     "humi": humi,
+                    "online": True,
                     "relay1": "on" if relays["relay1"].value == 0 else "off",
                     "relay2": "on" if relays["relay2"].value == 0 else "off",
                     "relay3": "on" if relays["relay3"].value == 0 else "off",
                     "relay4": "on" if relays["relay4"].value == 0 else "off",
-                }
-
-                # Send data to MQTT server
-                device.send_telemetry(sensor_data)
+                })
                 print(f"Sent: {temp}°C, {humi}%")
-
         except RuntimeError:
-            # Normal DHT error (ignore and retry next cycle)
             dht11_sensor.exit()
             dht11_sensor = adafruit_dht.DHT11(board.GP3)
-
         except Exception as e:
             print("Telemetry Error:", e)
-            led_paterns.slow(devled)
 
         last_telemetry_time = current_time
 
