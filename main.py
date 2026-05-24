@@ -1,6 +1,6 @@
 # Copyright (C) 2026 Mohamed Akoum
-#24-4-2026
-import json, os, shutil
+#24-5-2026
+import json, os, shutil, time
 from kivy.lang import Builder
 from kivy.clock import Clock
 from kivymd.app import MDApp
@@ -20,6 +20,9 @@ try:
     import pyi_splash
 except ImportError:
     pyi_splash = None
+
+
+DEVICE_OFFLINE_TIMEOUT = 20 # 20 seconds 
 
 
 class SensorCard(MDCard):
@@ -96,7 +99,9 @@ class IoTControlApp(MDApp):
         self.load_data()
         self.device_id = self.device_options[0] if self.device_options else "None"
 
-        # FIX: Use self.id (not mqtt_id) to match sdk.py's attribute name
+        # Tracks last time each device sent an online signal {device_id: timestamp}
+        self.last_seen = {}
+        self.auto_mode_state = "off"  # add this line
         self.hub = IoTDevice(device_id=self.mqtt_id, broker=self.mqtt_broker, port=self.mqtt_port)
         self.hub.on_telemetry_received = self.on_telemetry_callback
         self.reconnect_hub()
@@ -107,7 +112,7 @@ MDBoxLayout:
     orientation: 'vertical'
     MDTopAppBar:
         title: "IoT Control"
-        right_action_items: [["cog", lambda x: app.open_settings()], ["chart-bell-curve", lambda x: app.add_widget_dialog()], ["plus-box", lambda x: app.add_relay_dialog()]]
+        right_action_items: [["cog", lambda x: app.open_settings()], ["chart-bell-curve", lambda x: app.add_widget_dialog()], ["plus-box", lambda x: app.add_relay_dialog()], ["autorenew", lambda x: app.toggle_auto_mode()]]
     MDLabel:
         id: conn_warning
         text: "⚠️ SERVER OFFLINE"
@@ -117,6 +122,14 @@ MDBoxLayout:
         opacity: 0
         md_bg_color: 0.8, 0, 0, 1
         color: 1, 1, 1, 1
+    MDLabel:
+        id: auto_mode_banner
+        text: "AUTO MODE: OFF"
+        halign: "center"
+        size_hint_y: None
+        height: "30dp"
+        md_bg_color: 0.15, 0.15, 0.3, 1
+        color: 0.6, 0.6, 0.6, 1
     MDBoxLayout:
         orientation: 'horizontal'
         size_hint_y: None
@@ -170,6 +183,7 @@ MDBoxLayout:
     def on_start(self):
         self.setup_menu()
         self.render_all()
+        Clock.schedule_interval(self.check_connection, 2)  
         Clock.schedule_once(self.reveal_app, 0.4)
 
     def reveal_app(self, dt):
@@ -179,14 +193,35 @@ MDBoxLayout:
                 pyi_splash.close()
             except Exception:
                 pass
+    
+
 
     def check_connection(self, dt):
+        # Priority 1: broker/MQTT is down
         if not self.hub.is_connected():
-            self.root.ids.conn_warning.height = "35dp"
-            self.root.ids.conn_warning.opacity = 1
-        else:
-            self.root.ids.conn_warning.height = 0
-            self.root.ids.conn_warning.opacity = 0
+            self._show_warning("⚠️ SERVER OFFLINE")
+            return
+
+        # Priority 2: device hasn't sent an online signal in 15 seconds
+        if self.device_id != "None":
+            last = self.last_seen.get(self.device_id)
+            if last is not None and (time.time() - last) > DEVICE_OFFLINE_TIMEOUT:
+                self._show_warning(f"⚠️ {self.device_id} OFFLINE (no signal >15 seconds)")
+                return
+
+        #hide the banner
+        self._hide_warning()
+
+    def _show_warning(self, message):
+        banner = self.root.ids.conn_warning
+        banner.text = message
+        banner.height = "35dp"
+        banner.opacity = 1
+
+    def _hide_warning(self):
+        banner = self.root.ids.conn_warning
+        banner.height = 0
+        banner.opacity = 0
 
     def on_telemetry_callback(self, dev_id, data, timestamp):
         Clock.schedule_once(lambda dt: self.update_widgets(dev_id, data))
@@ -194,6 +229,10 @@ MDBoxLayout:
     def update_widgets(self, dev_id, data):
         if dev_id != self.device_id:
             return
+
+        # Record last seen time whenever the device sends online=true
+        if data.get("online") is True:
+            self.last_seen[dev_id] = time.time()
 
         for widget in self.root.ids.sensor_container.children:
             if isinstance(widget, SensorCard):
@@ -270,19 +309,11 @@ MDBoxLayout:
 
     def reconnect_hub(self):
         self.hub.disconnect()
-
-        # FIX: Use hub.id (not hub.mqtt_id) to match sdk.py's attribute name
         self.hub.id = self.mqtt_id
         self.hub.broker = self.mqtt_broker
         self.hub.port = self.mqtt_port
-
-        # Update the command topic to match the new device id
         self.hub.cmd_topic = f"devices/{self.mqtt_id}/commands"
-
         self.hub.connect()
-
-        # subscribe_telemetry now safely handles not-yet-connected state;
-        # _on_connect will finalize the subscription when ready
         if self.device_id != "None":
             self.hub.subscribe_telemetry(self.device_id)
 
@@ -344,6 +375,8 @@ MDBoxLayout:
     def set_device(self, choice):
         self.device_id = choice
         self.menu.dismiss()
+        # Clear stale last_seen so we don't carry over old timestamps when switching devices
+        self.last_seen.pop(choice, None)
         self.reconnect_hub()
         self.render_all()
 
@@ -409,6 +442,7 @@ MDBoxLayout:
             self.device_options.remove(target)
             self.device_data.pop(target, None)
             self.sensor_data.pop(target, None)
+            self.last_seen.pop(target, None)  # clean up last_seen too
         self.device_id = self.device_options[0] if self.device_options else "None"
         self.save_data()
         self.setup_menu()
@@ -484,6 +518,22 @@ MDBoxLayout:
         self.render_all()
         self.dialog.dismiss()
 
+
+    def _update_auto_mode_banner(self):
+        banner = self.root.ids.auto_mode_banner
+        if self.auto_mode_state == "on":
+            banner.text = "AUTO MODE: ON"
+            banner.md_bg_color = (0.1, 0.45, 0.3, 1)
+            banner.color = (0.6, 1.0, 0.7, 1)
+        else:
+            banner.text = "AUTO MODE: OFF"
+            banner.md_bg_color = (0.15, 0.15, 0.3, 1)
+            banner.color = (0.6, 0.6, 0.6, 1)
+
+    def toggle_auto_mode(self, *args):
+        self.auto_mode_state = "on" if self.auto_mode_state == "off" else "off"
+        self.hub.send_command(self.device_id, "auto_mode", self.auto_mode_state)
+        self._update_auto_mode_banner()
 
 if __name__ == "__main__":
     IoTControlApp().run()
