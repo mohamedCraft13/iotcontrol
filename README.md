@@ -139,4 +139,6 @@ You're all set! 🎉 Your Pico W should now be connected to the broker and contr
 
 ## 📄 License
 
-This project is licensed under the [GPL-3.0 License](LICENSE).
+This project is licensed under the [MIT License](LICENSE).
+
+If you found this project interesting, please give it a star! ⭐
